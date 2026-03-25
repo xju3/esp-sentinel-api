@@ -1,0 +1,34 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "Sentinel Server API for monitoring machine statuses"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "protobuf>=7.34.0",
+    "paho-mqtt>=1.6.1",
+    "grpcio-tools>=1.50.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.24.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "protobuf>=4.21.0",
+    "paho-mqtt>=1.6.1",
+    "grpcio-tools>=1.50.0",
+    "pydantic-settings>=2.0.0",
+]
