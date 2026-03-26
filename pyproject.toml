@@ -27,5 +27,8 @@ dev = [
     "httpx>=0.24.0",
 ]
 
+[project.scripts]
+start = "src.__main__:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]

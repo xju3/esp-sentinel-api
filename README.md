@@ -81,12 +81,14 @@ Run the server:
 python -m src
 ```
 
-Or directly:
+Or directly with API_* 环境变量（推荐）：
 ```bash
-uvicorn src.main:app --reload
+export API_HOST=0.0.0.0
+export API_PORT=9000
+uvicorn src.main:app --reload --host "$API_HOST" --port "$API_PORT"
 ```
 
-The API will be available at http://127.0.0.1:8000
+The API will be available at http://127.0.0.1:8000 (默认) or http://$API_HOST:$API_PORT when指定端口。
 
 ## API Documentation
 
