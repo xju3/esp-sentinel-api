@@ -88,6 +88,14 @@ export API_PORT=9000
 uvicorn src.main:app --reload --host "$API_HOST" --port "$API_PORT"
 ```
 
+Or use the provided shell script（驻留后台运行）：
+```bash
+chmod +x run_api.sh
+./run_api.sh start
+./run_api.sh status
+./run_api.sh stop
+```
+
 The API will be available at http://127.0.0.1:8000 (默认) or http://$API_HOST:$API_PORT when指定端口。
 
 ## API Documentation
