@@ -1,31 +1,31 @@
 import os
 from pydantic_settings import BaseSettings
-from pydantic import computed_field
+from pydantic import computed_field, Field
 from urllib.parse import quote
 
 class Settings(BaseSettings):
     # MQTT settings
-    mqtt_host: str = "139.9.50.7"
-    mqtt_port: int = 1883
-    mqtt_topic: str = "sentinel"
-    mqtt_username: str = None
-    mqtt_password: str = None
-    mqtt_client_id: str = "sentinel-api-client"
-    mqtt_protocol_version: str = "3.1.1"
-    
+    mqtt_host: str = Field(default="139.9.50.7", env="MQTT_HOST")
+    mqtt_port: int = Field(default=1883, env="MQTT_PORT")
+    mqtt_topic: str = Field(default="sentinel", env="MQTT_TOPIC")
+    mqtt_username: str | None = Field(default=None, env="MQTT_USERNAME")
+    mqtt_password: str | None = Field(default=None, env="MQTT_PASSWORD")
+    mqtt_client_id: str = Field(default="sentinel-api-client", env="MQTT_CLIENT_ID")
+    mqtt_protocol_version: str = Field(default="3.1.1", env="MQTT_PROTOCOL_VERSION")
+
     # API settings
-    api_host: str = "0.0.0.0"
-    api_port: int = 8000
-    
+    api_host: str = Field(default="0.0.0.0", env="API_HOST")
+    api_port: int = Field(default=8000, env="API_PORT")
+
     # Logging
-    log_level: str = "INFO"
+    log_level: str = Field(default="INFO", env="LOG_LEVEL")
 
     # MySQL settings
-    mysql_host: str = "139.9.50.7"
-    mysql_port: int = 3306
-    mysql_user: str = "sentinel"
-    mysql_password: str = "7fd8cuda8dfd"
-    mysql_database: str = "sentinel"
+    mysql_host: str = Field(default="139.9.50.7", env="MYSQL_HOST")
+    mysql_port: int = Field(default=3306, env="MYSQL_PORT")
+    mysql_user: str = Field(default="sentinel", env="MYSQL_USER")
+    mysql_password: str = Field(default="7fd8cuda8dfd", env="MYSQL_PASSWORD")
+    mysql_database: str = Field(default="sentinel", env="MYSQL_DATABASE")
 
     @computed_field
     @property

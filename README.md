@@ -32,12 +32,47 @@ pyproject.toml
 README.md
 ```
 
+## Configuration
+
+The application uses environment variables for configuration. Copy `.env.example` to `.env` and update the values:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your specific configuration values:
+
+```env
+# MQTT Configuration
+MQTT_HOST=your_mqtt_broker_host
+MQTT_PORT=1883
+MQTT_TOPIC=sentinel
+MQTT_USERNAME=your_mqtt_username
+MQTT_PASSWORD=your_mqtt_password
+
+# Database Configuration
+MYSQL_HOST=your_mysql_host
+MYSQL_USER=your_mysql_user
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DATABASE=sentinel
+```
+
 ## Installation
 
 1. Install dependencies:
    ```bash
    pip install -e .
    ```
+
+## Testing Configuration
+
+To verify that your configuration is loaded correctly, run the test script:
+
+```bash
+python test_config.py
+```
+
+This will display all loaded configuration values (with passwords masked).
 
 ## Running the API
 
