@@ -29,10 +29,6 @@ def create_application() -> FastAPI:
     
     @app.on_event("startup")
     async def startup_event():
-        logger.info("Initializing database and creating tables...")
-        database.Base.metadata.create_all(bind=database.engine)
-        logger.info("Database tables created.")
-        
         logger.info("Starting MQTT service...")
         mqtt_service.connect()
         

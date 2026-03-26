@@ -81,8 +81,14 @@ class RmsReportProcessor(MessageProcessor):
         )
 
     def process(self, payload: messages_pb2.MsgPayload, data: bytes, service: "MQTTService") -> None:
+        logger.info(f"Processing RMS report for SN {payload.sn}, event_type {payload.et}, data length: {len(data)} bytes")
+        
         report_proto = messages_pb2.MsgRmsReport()
         report_proto.ParseFromString(data)
+
+        # Debug: Log raw protobuf values
+        logger.info(f"Raw protobuf data - temperature: {report_proto.temperature}, iso: {report_proto.iso}")
+        logger.info(f"RMS values - x: {report_proto.rms.x}, y: {report_proto.rms.y}, z: {report_proto.rms.z}, m: {report_proto.rms.m}")
 
         db_session = SessionLocal()
         try:

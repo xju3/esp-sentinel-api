@@ -1,49 +1,68 @@
 from sqlalchemy.orm import Session
 from src.dal import models
 from src.models import schemas
+from ..core.logging import setup_logging
+
+logger = setup_logging()
 
 def create_rms_report(db: Session, report: schemas.RmsReportCreate):
     """
     Creates a new machine event record in the database.
     """
-    db_event = models.MachineEvent(
-        # Metadata
-        sn=report.sn,
-        event_type=report.event_type,
-        timestamp=report.timestamp,
+    try:
+        logger.info(f"Creating machine event record for SN {report.sn}, event_type {report.event_type}")
         
-        # RMS values
-        rms_x=report.rms.x,
-        rms_y=report.rms.y,
-        rms_z=report.rms.z,
-        rms_m=report.rms.m,
+        db_event = models.MachineEvent(
+            # Metadata
+            sn=report.sn,
+            event_type=report.event_type,
+            timestamp=report.timestamp,
+            
+            # RMS values
+            rms_x=report.rms.x,
+            rms_y=report.rms.y,
+            rms_z=report.rms.z,
+            rms_m=report.rms.m,
+            
+            # Peak values
+            peak_x=report.peak.x,
+            peak_y=report.peak.y,
+            peak_z=report.peak.z,
+            peak_m=report.peak.m,
+            
+            # Crest values
+            crest_x=report.crest.x,
+            crest_y=report.crest.y,
+            crest_z=report.crest.z,
+            crest_m=report.crest.m,
+            
+            # Impulse values
+            impulse_x=report.impulse.x,
+            impulse_y=report.impulse.y,
+            impulse_z=report.impulse.z,
+            impulse_m=report.impulse.m,
+            
+            # Other fields
+            temperature=report.temperature,
+            iso=report.iso,
+        )
         
-        # Peak values
-        peak_x=report.peak.x,
-        peak_y=report.peak.y,
-        peak_z=report.peak.z,
-        peak_m=report.peak.m,
+        logger.info(f"Adding event to database session for SN {report.sn}")
+        db.add(db_event)
         
-        # Crest values
-        crest_x=report.crest.x,
-        crest_y=report.crest.y,
-        crest_z=report.crest.z,
-        crest_m=report.crest.m,
+        logger.info(f"Committing transaction for SN {report.sn}")
+        db.commit()
         
-        # Impulse values
-        impulse_x=report.impulse.x,
-        impulse_y=report.impulse.y,
-        impulse_z=report.impulse.z,
-        impulse_m=report.impulse.m,
+        logger.info(f"Refreshing event object for SN {report.sn}")
+        db.refresh(db_event)
         
-        # Other fields
-        temperature=report.temperature,
-        iso=report.iso,
-    )
-    db.add(db_event)
-    db.commit()
-    db.refresh(db_event)
-    return db_event
+        logger.info(f"Successfully created machine event with ID {db_event.id} for SN {report.sn}")
+        return db_event
+        
+    except Exception as e:
+        logger.error(f"Failed to create machine event for SN {report.sn}: {e}")
+        db.rollback()  # 确保事务回滚
+        raise
 
 
 def _round_to_3dp(value: float) -> float:

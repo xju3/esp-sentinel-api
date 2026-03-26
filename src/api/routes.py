@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 from ..services.mqtt_service import mqtt_service
 from ..core.logging import setup_logging
+from ..dal.database import SessionLocal
+from sqlalchemy import text
 
 logger = setup_logging()
 router = APIRouter()
@@ -13,6 +15,40 @@ async def root():
 @router.get("/health")
 async def health():
     return {"status": "healthy"}
+
+@router.get("/db-health")
+async def db_health():
+    """Check database connection and table existence"""
+    try:
+        db = SessionLocal()
+        try:
+            # Test basic connection
+            db.execute(text("SELECT 1"))
+            
+            # Check if machine_events table exists
+            result = db.execute(text("SHOW TABLES LIKE 'machine_events'"))
+            table_exists = result.fetchone() is not None
+            
+            # Get table row count
+            if table_exists:
+                count_result = db.execute(text("SELECT COUNT(*) FROM machine_events"))
+                row_count = count_result.fetchone()[0]
+            else:
+                row_count = 0
+            
+            return {
+                "database_connected": True,
+                "machine_events_table_exists": table_exists,
+                "machine_events_row_count": row_count
+            }
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        return {
+            "database_connected": False,
+            "error": str(e)
+        }
 
 @router.get("/machines")
 async def get_machines():
