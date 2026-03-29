@@ -12,8 +12,9 @@ if [ -z "$ENV_FILE" ]; then
   ENV_FILE="$APP_DIR/.env"
 fi
 
-PID_FILE="$APP_DIR/server-api.pid"
-LOG_FILE="$APP_DIR/server-api.log"
+TMP_DIR="${TMPDIR:-/tmp}"
+PID_FILE="$TMP_DIR/server-api.pid"
+LOG_FILE="$TMP_DIR/server-api.log"
 
 load_env() {
   if [ -f "$ENV_FILE" ]; then
