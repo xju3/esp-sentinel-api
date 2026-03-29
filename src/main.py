@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config.settings import settings
 from .core.logging import setup_logging
-from .services.mqtt_service import mqtt_service
+from .mqtt import mqtt_client
 from .api.routes import router
 from .dal import database
 
@@ -30,12 +30,12 @@ def create_application() -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         logger.info("Starting MQTT service...")
-        mqtt_service.connect()
+        mqtt_client.connect()
         
     @app.on_event("shutdown")
     async def shutdown_event():
         logger.info("Stopping MQTT service...")
-        mqtt_service.disconnect()
+        mqtt_client.disconnect()
         
     return app
 

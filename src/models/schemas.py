@@ -1,27 +1,26 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
 
-class MachineStatus(BaseModel):
-    x: float
-    y: float
-    z: float
-    m: float
-    st: int
 
-class MachineData(BaseModel):
-    sn: int
-    et: int
-    ts: int
-    received_at: int
-    status: Optional[MachineStatus] = None
-
-# New schemas for RMS report handling
 class TriaxialValue(BaseModel):
     x: float
     y: float
     z: float
     m: float
+
+
+class MachineStatus(BaseModel):
+    rms: TriaxialValue
+    st: int
+
+
+class MachineData(BaseModel):
+    sn: int
+    et: int
+    received_at: int
+    status: Optional[MachineStatus] = None
+
+# New schemas for RMS report handling
 
 class RmsReportBase(BaseModel):
     rms: TriaxialValue
@@ -33,9 +32,18 @@ class RmsReportBase(BaseModel):
 
 class RmsReportCreate(RmsReportBase):
     sn: int
-    event_type: int = Field(alias="et")
-    timestamp: int = Field(alias="ts")
+    event_type: int
+    timestamp: int
 
     class Config:
         orm_mode = True
-        allow_population_by_field_name = True
+
+
+class MachineStatusCreate(BaseModel):
+    sn: int
+    event_type: int
+    rms: TriaxialValue
+    st: int
+
+    class Config:
+        orm_mode = True

@@ -126,6 +126,7 @@ Settings can be configured via environment variables or `.env` file:
 - `MQTT_TOPIC`: MQTT topic to subscribe (default: sentinel)
 - `MQTT_USERNAME`: MQTT username (optional)
 - `MQTT_PASSWORD`: MQTT password (optional)
+- `MQTT_CLIENT_ID_UNIQUE`: Whether to suffix client_id with host+pid to avoid collisions (default: true)
 - `API_HOST`: API host (default: 0.0.0.0)
 - `API_PORT`: API port (default: 8000)
 - `LOG_LEVEL`: Logging level (default: INFO)

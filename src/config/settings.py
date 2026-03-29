@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     mqtt_username: str | None = Field(default=None, env="MQTT_USERNAME")
     mqtt_password: str | None = Field(default=None, env="MQTT_PASSWORD")
     mqtt_client_id: str = Field(default="sentinel-api-client", env="MQTT_CLIENT_ID")
+    mqtt_client_id_unique: bool = Field(default=True, env="MQTT_CLIENT_ID_UNIQUE")
     mqtt_protocol_version: str = Field(default="3.1.1", env="MQTT_PROTOCOL_VERSION")
 
     # API settings

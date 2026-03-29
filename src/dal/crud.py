@@ -65,6 +65,35 @@ def create_rms_report(db: Session, report: schemas.RmsReportCreate):
         raise
 
 
+def create_machine_status(db: Session, status: schemas.MachineStatusCreate):
+    """
+    Creates a new machine status record in the database.
+    """
+    try:
+        logger.info(f"Creating machine status record for SN {status.sn}, event_type {status.event_type}")
+
+        db_status = models.MachineStatusEvent(
+            sn=status.sn,
+            event_type=status.event_type,
+            x=status.rms.x,
+            y=status.rms.y,
+            z=status.rms.z,
+            m=status.rms.m,
+            st=status.st,
+        )
+
+        db.add(db_status)
+        db.commit()
+        db.refresh(db_status)
+        logger.info(f"Successfully created machine status with ID {db_status.id} for SN {status.sn}")
+        return db_status
+
+    except Exception as e:
+        logger.error(f"Failed to create machine status for SN {status.sn}: {e}")
+        db.rollback()
+        raise
+
+
 def _round_to_3dp(value: float) -> float:
     """Round a float value to 3 decimal places for display"""
     return round(value, 3) if value is not None else None
@@ -91,48 +120,54 @@ def _rms_report_to_dict(report: models.MachineEvent) -> dict:
     return result
 
 
-def get_rms_reports(
+def _machine_status_to_dict(status: models.MachineStatusEvent) -> dict:
+    result = {}
+    for column in status.__table__.columns:
+        result[column.name] = getattr(status, column.name)
+    return result
+
+
+def get_rms_reports_paginated(
     db: Session,
     sn: int | None = None,
-    day: str | None = None,
-    start_at: str | None = None,
-    end_at: str | None = None,
-    limit: int = 20,
-):
+    page_size: int = 20,
+    curr_page: int = 1,
+) -> tuple[list[dict], int]:
     query = db.query(models.MachineEvent)
 
     if sn is not None:
         query = query.filter(models.MachineEvent.sn == sn)
 
-    if day is not None:
-        try:
-            from datetime import datetime, timedelta
+    total = query.count()
+    offset = (curr_page - 1) * page_size
 
-            day_date = datetime.fromisoformat(day).date()
-            day_start = int(datetime.combine(day_date, datetime.min.time()).timestamp() * 1000)
-            day_end = int((datetime.combine(day_date, datetime.max.time()) + timedelta(microseconds=1)).timestamp() * 1000)
-            query = query.filter(models.MachineEvent.timestamp >= day_start, models.MachineEvent.timestamp <= day_end)
-        except Exception as exc:
-            raise ValueError(f"Invalid day format '{day}', use YYYY-MM-DD") from exc
+    results = (
+        query.order_by(models.MachineEvent.timestamp.desc())
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
+    return ([_rms_report_to_dict(r) for r in results], total)
 
-    if start_at is not None:
-        try:
-            from datetime import datetime
 
-            start_ts = int(datetime.fromisoformat(start_at).timestamp() * 1000)
-            query = query.filter(models.MachineEvent.timestamp >= start_ts)
-        except Exception as exc:
-            raise ValueError(f"Invalid start_at format '{start_at}', use ISO 8601") from exc
+def get_machine_status_events(
+    db: Session,
+    sn: int | None = None,
+    page_size: int = 20,
+    curr_page: int = 1,
+) -> tuple[list[dict], int]:
+    query = db.query(models.MachineStatusEvent)
 
-    if end_at is not None:
-        try:
-            from datetime import datetime
+    if sn is not None:
+        query = query.filter(models.MachineStatusEvent.sn == sn)
 
-            end_ts = int(datetime.fromisoformat(end_at).timestamp() * 1000)
-            query = query.filter(models.MachineEvent.timestamp <= end_ts)
-        except Exception as exc:
-            raise ValueError(f"Invalid end_at format '{end_at}', use ISO 8601") from exc
+    total = query.count()
+    offset = (curr_page - 1) * page_size
 
-    query = query.order_by(models.MachineEvent.timestamp.desc()).limit(limit)
-    results = query.all()
-    return [_rms_report_to_dict(r) for r in results]
+    results = (
+        query.order_by(models.MachineStatusEvent.id.desc())
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
+    return ([_machine_status_to_dict(r) for r in results], total)

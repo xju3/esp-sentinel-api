@@ -41,3 +41,19 @@ class MachineEvent(Base):
     iso = Column(Integer, comment="ISO标准")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class MachineStatusEvent(Base):
+    __tablename__ = "machine_status_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    sn = Column(Integer, index=True, comment="设备序列号")
+    event_type = Column(Integer, comment="事件类型")
+    x = Column(Float)
+    y = Column(Float)
+    z = Column(Float)
+    m = Column(Float)
+    st = Column(Integer, comment="设备状态")
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
