@@ -16,7 +16,6 @@ def create_rms_report(db: Session, report: schemas.RmsReportCreate):
             # Metadata
             sn=report.sn,
             event_type=report.event_type,
-            timestamp=report.timestamp,
             
             # RMS values
             rms_x=report.rms.x,
@@ -137,12 +136,11 @@ def get_rms_reports_paginated(
 
     if sn is not None:
         query = query.filter(models.MachineEvent.sn == sn)
-
     total = query.count()
     offset = (curr_page - 1) * page_size
 
     results = (
-        query.order_by(models.MachineEvent.timestamp.desc())
+        query.order_by(models.MachineEvent.created_at.desc())
         .offset(offset)
         .limit(page_size)
         .all()

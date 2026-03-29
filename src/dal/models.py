@@ -10,7 +10,6 @@ class MachineEvent(Base):
     # Metadata from MsgPayload
     sn = Column(Integer, index=True, comment="设备序列号")
     event_type = Column(Integer, comment="事件类型")
-    timestamp = Column(BigInteger, index=True, comment="Unix时间戳 (ms)")
     
     # RMS values from MsgTriaxialValue
     rms_x = Column(Float)
