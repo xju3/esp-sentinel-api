@@ -3,7 +3,7 @@ from sqlalchemy.sql import func
 from src.dal.database import Base
 
 class MachineEvent(Base):
-    __tablename__ = "machine_events"
+    __tablename__ = "rms_report"
 
     id = Column(Integer, primary_key=True, index=True)
     
@@ -43,7 +43,7 @@ class MachineEvent(Base):
 
 
 class MachineStatusEvent(Base):
-    __tablename__ = "machine_status_events"
+    __tablename__ = "machine_status"
 
     id = Column(Integer, primary_key=True, index=True)
 
