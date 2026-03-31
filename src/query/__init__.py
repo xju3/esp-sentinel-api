@@ -1,4 +1,4 @@
-from .machine_status_query import query_machine_status_events
+from .machine_status_query import query_machine_status
 from .rms_report_query import query_rms_reports
 
-__all__ = ["query_machine_status_events", "query_rms_reports"]
+__all__ = ["query_machine_status", "query_rms_reports"]

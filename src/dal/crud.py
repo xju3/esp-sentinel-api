@@ -10,7 +10,7 @@ def create_rms_report(db: Session, report: schemas.RmsReportCreate):
     Creates a new machine event record in the database.
     """
     try:
-        logger.info(f"Creating machine event record for SN {report.sn}, event_type {report.event_type}")
+        # logger.info(f"Creating rms report record for SN {report.sn}, event_type {report.event_type}")
         
         db_event = models.MachineEvent(
             # Metadata
@@ -46,16 +46,16 @@ def create_rms_report(db: Session, report: schemas.RmsReportCreate):
             iso=report.iso,
         )
         
-        logger.info(f"Adding event to database session for SN {report.sn}")
+        # logger.info(f"Adding event to database session for SN {report.sn}")
         db.add(db_event)
         
-        logger.info(f"Committing transaction for SN {report.sn}")
+        # logger.info(f"Committing transaction for SN {report.sn}")
         db.commit()
         
-        logger.info(f"Refreshing event object for SN {report.sn}")
+        # logger.info(f"Refreshing event object for SN {report.sn}")
         db.refresh(db_event)
         
-        logger.info(f"Successfully created machine event with ID {db_event.id} for SN {report.sn}")
+        # logger.info(f"Successfully created machine event with ID {db_event.id} for SN {report.sn}")
         return db_event
         
     except Exception as e:
@@ -69,7 +69,7 @@ def create_machine_status(db: Session, status: schemas.MachineStatusCreate):
     Creates a new machine status record in the database.
     """
     try:
-        logger.info(f"Creating machine status record for SN {status.sn}, event_type {status.event_type}")
+        # logger.info(f"Creating machine status record for SN {status.sn}, event_type {status.event_type}")
 
         db_status = models.MachineStatusEvent(
             sn=status.sn,
@@ -84,7 +84,7 @@ def create_machine_status(db: Session, status: schemas.MachineStatusCreate):
         db.add(db_status)
         db.commit()
         db.refresh(db_status)
-        logger.info(f"Successfully created machine status with ID {db_status.id} for SN {status.sn}")
+        # logger.info(f"Successfully created machine status with ID {db_status.id} for SN {status.sn}")
         return db_status
 
     except Exception as e:

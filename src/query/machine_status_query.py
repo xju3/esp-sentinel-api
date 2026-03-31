@@ -2,7 +2,7 @@ from ..dal import crud
 from ..dal.database import SessionLocal
 
 
-def query_machine_status_events(
+def query_machine_status(
     sn: int | None = None,
     page_size: int = 20,
     curr_page: int = 1,

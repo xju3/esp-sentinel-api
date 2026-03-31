@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from ..core.logging import setup_logging
-from ..query import query_machine_status_events, query_rms_reports
+from ..query import query_machine_status, query_rms_reports
 
 logger = setup_logging()
 router = APIRouter()
@@ -14,7 +14,7 @@ async def machine_state(
     curr_page: int = 1,
 ):
     try:
-        return query_machine_status_events(
+        return query_machine_status(
             sn=sn,
             page_size=page_size,
             curr_page=curr_page,
