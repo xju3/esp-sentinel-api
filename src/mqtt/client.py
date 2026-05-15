@@ -8,6 +8,7 @@ import paho.mqtt.client as mqtt
 from ..config.settings import settings
 from ..core.logging import setup_logging
 from ..models import messages_pb2
+from ..processor.rms_report_processor import rms_report_processsor
 from .dispatcher import MessageDispatcher
 from .handlers.machine_status import MachineStatusProcessor
 from .handlers.rms_report import RmsReportProcessor
@@ -27,13 +28,18 @@ def get_protocol_version(version_str: str):
 
 
 class MQTTClient:
-    def __init__(self, dispatcher: MessageDispatcher | None = None) -> None:
+    def __init__(
+        self,
+        dispatcher: MessageDispatcher | None = None,
+        rms_processor=rms_report_processsor,
+    ) -> None:
         self.is_connected = False
         self.reconnect_delay = 5
         self.max_reconnect_delay = 300
         self.reconnect_thread = None
         self.should_reconnect = True
         self.reconnect_lock = threading.Lock()
+        self._rms_processor = rms_processor
 
         protocol = get_protocol_version(settings.mqtt_protocol_version)
         self.client_id = self._build_client_id()
@@ -50,6 +56,27 @@ class MQTTClient:
             },
             default_processor=UnknownMessageProcessor(),
         )
+
+    @staticmethod
+    def _looks_like_direct_rms_report(report: messages_pb2.MsgRmsReport) -> bool:
+        if report.sn <= 0:
+            return False
+
+        if 0 < report.iso < 1000:
+            return True
+
+        values = (
+            report.temperature,
+            report.rms_x,
+            report.rms_y,
+            report.rms_z,
+            report.rms_m,
+            report.peak_x,
+            report.peak_y,
+            report.peak_z,
+            report.peak_m,
+        )
+        return any(value != 0 for value in values)
 
     def _build_client_id(self) -> str:
         base_id = settings.mqtt_client_id or "sentinel-api-client"
@@ -84,8 +111,16 @@ class MQTTClient:
 
     def on_message(self, client, userdata, msg):
         try:
+            report = messages_pb2.MsgRmsReport()
+            report.ParseFromString(msg.payload)
+            if self._looks_like_direct_rms_report(report):
+                self._rms_processor.save_direct_report(report)
+                return
+
             payload = messages_pb2.MsgPayload()
             payload.ParseFromString(msg.payload)
+            if payload.sn <= 0 or not payload.data:
+                raise ValueError("Unsupported MQTT payload format")
             self.dispatcher.dispatch(payload)
         except Exception as e:
             logger.error(f"Error parsing message: {e}")

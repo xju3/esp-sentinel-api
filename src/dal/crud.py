@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from src.dal import models
 from src.models import schemas
@@ -30,16 +31,16 @@ def create_rms_report(db: Session, report: schemas.RmsReportCreate):
             peak_m=report.peak.m,
             
             # Crest values
-            crest_x=report.crest.x,
-            crest_y=report.crest.y,
-            crest_z=report.crest.z,
-            crest_m=report.crest.m,
+            crest_x=report.crest.x if report.crest else None,
+            crest_y=report.crest.y if report.crest else None,
+            crest_z=report.crest.z if report.crest else None,
+            crest_m=report.crest.m if report.crest else None,
             
             # Impulse values
-            impulse_x=report.impulse.x,
-            impulse_y=report.impulse.y,
-            impulse_z=report.impulse.z,
-            impulse_m=report.impulse.m,
+            impulse_x=report.impulse.x if report.impulse else None,
+            impulse_y=report.impulse.y if report.impulse else None,
+            impulse_z=report.impulse.z if report.impulse else None,
+            impulse_m=report.impulse.m if report.impulse else None,
             
             # Other fields
             temperature=report.temperature,
@@ -146,6 +147,76 @@ def get_rms_reports_paginated(
         .all()
     )
     return ([_rms_report_to_dict(r) for r in results], total)
+
+
+def get_rms_compare_series(
+    db: Session,
+    limit: int = 100,
+    offset: int = 0,
+) -> dict:
+    ranked_reports = (
+        db.query(
+            models.MachineEvent.sn.label("sn"),
+            models.MachineEvent.rms_m.label("rms_m"),
+            models.MachineEvent.created_at.label("created_at"),
+            func.row_number()
+            .over(
+                partition_by=models.MachineEvent.sn,
+                order_by=(
+                    models.MachineEvent.created_at.desc(),
+                    models.MachineEvent.id.desc(),
+                ),
+            )
+            .label("sample_index"),
+        )
+        .filter(models.MachineEvent.rms_m.isnot(None))
+        .subquery()
+    )
+
+    rows = (
+        db.query(
+            ranked_reports.c.sn,
+            ranked_reports.c.rms_m,
+            ranked_reports.c.created_at,
+            ranked_reports.c.sample_index,
+        )
+        .filter(ranked_reports.c.sample_index <= offset + limit)
+        .filter(ranked_reports.c.sample_index > offset)
+        .order_by(
+            ranked_reports.c.sn.asc(),
+            ranked_reports.c.sample_index.desc(),
+        )
+        .all()
+    )
+
+    has_more_older = (
+        db.query(ranked_reports.c.sn)
+        .filter(ranked_reports.c.sample_index > offset + limit)
+        .first()
+        is not None
+    )
+
+    series_by_sn: dict[int, list[dict]] = {}
+    for row in rows:
+        points = series_by_sn.setdefault(row.sn, [])
+        points.append(
+            {
+                "index": int(row.sample_index),
+                "rms_m": _round_to_3dp(row.rms_m),
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+            }
+        )
+
+    return {
+        "series": [
+            {
+                "sn": sn,
+                "points": points,
+            }
+            for sn, points in sorted(series_by_sn.items(), key=lambda item: item[0])
+        ],
+        "has_more_older": has_more_older,
+    }
 
 
 def get_machine_status_events(

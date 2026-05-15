@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from ..core.logging import setup_logging
-from ..query import query_machine_status, query_rms_reports
+from ..query import query_machine_status, query_rms_compare, query_rms_reports
 
 logger = setup_logging()
 router = APIRouter()
@@ -42,4 +42,18 @@ async def rms_report(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         logger.error(f"Error querying rms report: {exc}")
+        raise HTTPException(status_code=500, detail="Internal Server Error") from exc
+
+
+@router.get("/rms-report/compare")
+async def rms_report_compare(
+    limit: int = 100,
+    offset: int = 0,
+):
+    try:
+        return query_rms_compare(limit=limit, offset=offset)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.error(f"Error querying rms compare: {exc}")
         raise HTTPException(status_code=500, detail="Internal Server Error") from exc

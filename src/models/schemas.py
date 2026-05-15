@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
 
 
 class TriaxialValue(BaseModel):
@@ -25,8 +26,8 @@ class MachineData(BaseModel):
 class RmsReportBase(BaseModel):
     rms: TriaxialValue
     peak: TriaxialValue
-    crest: TriaxialValue
-    impulse: TriaxialValue
+    crest: Optional[TriaxialValue] = None
+    impulse: Optional[TriaxialValue] = None
     temperature: float
     iso: int
 
